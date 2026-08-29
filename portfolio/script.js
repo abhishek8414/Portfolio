@@ -157,7 +157,7 @@ function validateField(input) {
   return !error;
 }
 
-contactForm?.addEventListener('submit', (event) => {
+contactForm?.addEventListener('submit', async (event) => {
   event.preventDefault();
 
   const formFields = [...contactForm.querySelectorAll('input, textarea')];
@@ -170,18 +170,48 @@ contactForm?.addEventListener('submit', (event) => {
     return;
   }
 
-  status.textContent = 'Your message has been sent successfully!';
-  status.style.color = '#57d39f';
-  contactForm.reset();
+  const formData = new FormData(contactForm);
+  const payload = {
+    name: formData.get('name'),
+    email: formData.get('email'),
+    message: formData.get('message'),
+    _subject: 'New Portfolio Contact Form Submission',
+    _captcha: 'false'
+  };
 
-  formFields.forEach((field) => field.classList.remove('input-error'));
-  formFields.forEach((field) => {
-    const fieldWrap = field.closest('.field');
-    if (fieldWrap) {
-      const errorEl = fieldWrap.querySelector('.error-message');
-      if (errorEl) errorEl.textContent = '';
+  status.textContent = 'Sending your message...';
+  status.style.color = '#d9d7ff';
+
+  try {
+    const response = await fetch('https://formsubmit.co/ajax/aksharma2921@gmail.com', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      throw new Error('Request failed');
     }
-  });
+
+    status.textContent = 'Your message has been sent successfully!';
+    status.style.color = '#57d39f';
+    contactForm.reset();
+
+    formFields.forEach((field) => field.classList.remove('input-error'));
+    formFields.forEach((field) => {
+      const fieldWrap = field.closest('.field');
+      if (fieldWrap) {
+        const errorEl = fieldWrap.querySelector('.error-message');
+        if (errorEl) errorEl.textContent = '';
+      }
+    });
+  } catch (error) {
+    status.textContent = 'Something went wrong. Please email me directly at aksharma2921@gmail.com';
+    status.style.color = '#ff7b7b';
+  }
 });
 
 const contactFields = contactForm ? [...contactForm.querySelectorAll('input, textarea')] : [];
